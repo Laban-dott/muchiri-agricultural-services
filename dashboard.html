@@ -5,6 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driver Dashboard - Muchiri Services</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase Scripts -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+        
+        // Firebase configuration (same as booking system)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDemoKey-ReplaceWithActualKey",
+            authDomain: "muchiri-services.firebaseapp.com",
+            databaseURL: "https://muchiri-services-default-rtdb.firebaseio.com/",
+            projectId: "muchiri-services",
+            storageBucket: "muchiri-services.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef123456"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Make Firebase functions available globally
+        window.firebaseDB = { database, ref, onValue, update };
+    </script>
 </head>
 <body>
     <!-- Login Page -->
@@ -108,48 +133,66 @@
     </div>
 
     <script>
-        // Sample data - In real application, this would come from a database
-        let bookingsData = [
-            {
-                id: 1,
-                service: 'Rotavation',
-                customer: 'John Kamau',
-                phone: '0712345678',
-                section: 'Kraba',
-                unit: 'K1',
-                quantity: '2 acres',
-                date: '2025-08-29',
-                amount: 'KSH 10,000',
-                status: 'pending',
-                createdAt: '2025-08-28'
-            },
-            {
-                id: 2,
-                service: 'Transport',
-                customer: 'Mary Wanjiku',
-                phone: '0723456789',
-                section: 'Tebere',
-                unit: 'T2',
-                quantity: '50 bags',
-                date: '2025-08-30',
-                amount: 'KSH 7,500',
-                status: 'pending',
-                createdAt: '2025-08-28'
-            },
-            {
-                id: 3,
-                service: 'Harvesting',
-                customer: 'Peter Maina',
-                phone: '0734567890',
-                section: 'Wamunu',
-                unit: 'W3',
-                quantity: '1 acre',
-                date: '2025-08-27',
-                amount: 'KSH 6,000',
-                status: 'completed',
-                createdAt: '2025-08-26'
+        // Global bookings data
+        let bookingsData = [];
+
+        // Load bookings from Firebase or localStorage
+        function loadBookingsData() {
+            if (window.firebaseDB) {
+                // Load from Firebase
+                const bookingsRef = window.firebaseDB.ref(window.firebaseDB.database, 'bookings');
+                window.firebaseDB.onValue(bookingsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        // Convert Firebase data to array format
+                        bookingsData = Object.keys(data).map(key => ({
+                            id: key,
+                            ...data[key]
+                        }));
+                        console.log('Loaded bookings from Firebase:', bookingsData);
+                    } else {
+                        bookingsData = [];
+                        console.log('No bookings found in Firebase');
+                    }
+                    updateStats();
+                    renderBookings();
+                }, (error) => {
+                    console.error('Error loading from Firebase:', error);
+                    loadFromLocalStorage();
+                });
+            } else {
+                loadFromLocalStorage();
             }
-        ];
+        }
+
+        // Fallback to localStorage
+        function loadFromLocalStorage() {
+            const storedBookings = localStorage.getItem('muchiri_bookings');
+            if (storedBookings) {
+                bookingsData = JSON.parse(storedBookings);
+                console.log('Loaded bookings from localStorage:', bookingsData);
+            } else {
+                // Use sample data if no stored data
+                bookingsData = [
+                    {
+                        id: 'sample1',
+                        service: 'Rotavation',
+                        customer: 'John Kamau',
+                        phone: '0712345678',
+                        section: 'Kraba',
+                        unit: 'K1',
+                        quantity: '2 acres',
+                        date: '2025-08-29',
+                        amount: 'KSH 10,000',
+                        status: 'pending',
+                        createdAt: '2025-08-28'
+                    }
+                ];
+                console.log('Using sample data');
+            }
+            updateStats();
+            renderBookings();
+        }
 
         // Login functionality
         document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -201,8 +244,7 @@
 
         // Load dashboard data
         function loadDashboard() {
-            updateStats();
-            renderBookings();
+            loadBookingsData(); // This will call updateStats() and renderBookings()
         }
 
         function updateStats() {
@@ -307,28 +349,59 @@
             const booking = bookingsData.find(b => b.id === bookingId);
             if (booking) {
                 booking.status = 'completed';
-                loadDashboard();
+                
+                // Update in Firebase if available
+                if (window.firebaseDB && typeof bookingId === 'string' && bookingId !== 'sample1') {
+                    const bookingRef = window.firebaseDB.ref(window.firebaseDB.database, `bookings/${bookingId}`);
+                    window.firebaseDB.update(bookingRef, { status: 'completed' })
+                        .then(() => console.log('Status updated in Firebase'))
+                        .catch((error) => console.error('Error updating Firebase:', error));
+                } else {
+                    // Update localStorage if Firebase not available
+                    const storedBookings = JSON.parse(localStorage.getItem('muchiri_bookings') || '[]');
+                    const bookingIndex = storedBookings.findIndex(b => b.id === bookingId);
+                    if (bookingIndex !== -1) {
+                        storedBookings[bookingIndex].status = 'completed';
+                        localStorage.setItem('muchiri_bookings', JSON.stringify(storedBookings));
+                    }
+                }
+                
+                updateStats();
+                renderBookings();
                 
                 // Show success message
                 const successMsg = document.createElement('div');
                 successMsg.className = 'success-message';
                 successMsg.textContent = 'Service marked as completed!';
+                successMsg.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #28a745;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                `;
                 document.body.appendChild(successMsg);
                 
                 setTimeout(() => {
-                    document.body.removeChild(successMsg);
+                    if (document.body.contains(successMsg)) {
+                        document.body.removeChild(successMsg);
+                    }
                 }, 3000);
             }
         }
 
         function refreshBookings() {
-            // In real app, this would fetch fresh data from server
+            // Refresh data from Firebase or localStorage
             const refreshBtn = event.target;
             refreshBtn.textContent = '🔄 Refreshing...';
             refreshBtn.disabled = true;
             
             setTimeout(() => {
-                loadDashboard();
+                loadBookingsData(); // Reload fresh data
                 refreshBtn.textContent = '🔄 Refresh';
                 refreshBtn.disabled = false;
             }, 1000);

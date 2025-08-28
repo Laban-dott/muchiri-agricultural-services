@@ -5,6 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agricultural Services Booking</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase Scripts -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getDatabase, ref, push, set, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+        
+        // Firebase configuration (you'll need to replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDemoKey-ReplaceWithActualKey",
+            authDomain: "muchiri-services.firebaseapp.com",
+            databaseURL: "https://muchiri-services-default-rtdb.firebaseio.com/",
+            projectId: "muchiri-services",
+            storageBucket: "muchiri-services.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef123456"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Make Firebase functions available globally
+        window.firebaseDB = { database, ref, push, set, serverTimestamp };
+    </script>
 </head>
 <body>
     <!-- Main Services Page -->
@@ -242,13 +267,75 @@
 
         // Complete booking
         function completeBooking() {
+            // Get form data
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const section = document.getElementById('section').value;
+            const unit = document.getElementById('unit').value;
+            const quantity = document.getElementById('quantity').value;
+            const serviceDate = document.getElementById('serviceDate').value;
+            const totalAmount = quantity * currentRate;
+            
+            // Prepare booking data
+            const bookingData = {
+                service: currentService,
+                customer: `${firstName} ${lastName}`,
+                phone: phoneNumber,
+                section: section,
+                unit: unit,
+                quantity: `${quantity} ${currentUnit === 'acre' ? 'acres' : 'bags'}`,
+                date: serviceDate,
+                amount: `KSH ${totalAmount.toLocaleString()}`,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                timestamp: window.firebaseDB ? window.firebaseDB.serverTimestamp() : Date.now()
+            };
+            
             // Add loading state
             const completeBtn = document.querySelector('.complete-btn');
             const originalText = completeBtn.textContent;
-            completeBtn.textContent = 'Processing...';
+            completeBtn.textContent = 'Saving to Database...';
             completeBtn.classList.add('loading');
             
-            // Simulate booking process
+            // Save to Firebase (if available) or localStorage as fallback
+            if (window.firebaseDB) {
+                try {
+                    const bookingsRef = window.firebaseDB.ref(window.firebaseDB.database, 'bookings');
+                    window.firebaseDB.push(bookingsRef, bookingData).then(() => {
+                        console.log('Booking saved to Firebase successfully');
+                        completeBookingProcess(completeBtn, originalText);
+                    }).catch((error) => {
+                        console.error('Error saving to Firebase:', error);
+                        // Fallback to localStorage
+                        saveToLocalStorage(bookingData);
+                        completeBookingProcess(completeBtn, originalText);
+                    });
+                } catch (error) {
+                    console.error('Firebase error:', error);
+                    // Fallback to localStorage
+                    saveToLocalStorage(bookingData);
+                    completeBookingProcess(completeBtn, originalText);
+                }
+            } else {
+                // Fallback to localStorage if Firebase not available
+                saveToLocalStorage(bookingData);
+                completeBookingProcess(completeBtn, originalText);
+            }
+        }
+        
+        // Helper function to save to localStorage as fallback
+        function saveToLocalStorage(bookingData) {
+            let bookings = JSON.parse(localStorage.getItem('muchiri_bookings') || '[]');
+            bookingData.id = Date.now(); // Add simple ID
+            bookings.push(bookingData);
+            localStorage.setItem('muchiri_bookings', JSON.stringify(bookings));
+            console.log('Booking saved to localStorage as fallback');
+        }
+        
+        // Helper function to complete the booking process
+        function completeBookingProcess(completeBtn, originalText) {
+            // Simulate processing time
             setTimeout(() => {
                 // Hide the pricing section (Part 3)
                 const pricingSection = document.getElementById('pricingSection');
@@ -273,7 +360,7 @@
                 setTimeout(() => {
                     showPage('bookingPage');
                 }, 3000);
-            }, 2000);
+            }, 1000);
         }
 
         // Navigation functions
