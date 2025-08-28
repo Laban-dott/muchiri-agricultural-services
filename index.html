@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agricultural Services Booking</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main Services Page -->
+    <div id="mainPage" class="page">
+        <div class="container">
+            <h1>Muchiri Services</h1>
+            <p class="subtitle">Choose service to book</p>
+            
+            <div class="services-list">
+                <div class="service-card" onclick="selectService('Rotavation', 5000, 'acre')">
+                    <div class="service-icon">🚜</div>
+                    <h3>Rotavation</h3>
+                    <p>KSH 5,000 per acre</p>
+                </div>
+                
+                <div class="service-card" onclick="selectService('Transport', 150, 'bag')">
+                    <div class="service-icon">🚚</div>
+                    <h3>Transport</h3>
+                    <p></p>
+                </div>
+                
+                <div class="service-card" onclick="selectService('Harvesting', 6000, 'acre')">
+                    <div class="service-icon">🌾</div>
+                    <h3>Harvesting</h3>
+                    <p>KSH 6,000 per acre</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Page -->
+    <div id="bookingPage" class="page hidden">
+        <div class="container">
+            <div class="navigation-buttons">
+                <div class="back-btn" onclick="goBack()">← Back</div>
+                <div class="home-btn" onclick="goToHome()">🏠 Home</div>
+            </div>
+            <h2 id="bookingHeader">You are booking for Service</h2>
+            
+            <form id="bookingForm">
+                <!-- Part 1: Personal Details -->
+                <div class="form-section">
+                    <h3>Personal Details</h3>
+                    <div class="input-group">
+                        <input type="text" id="firstName" placeholder="First Name" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="lastName" placeholder="Last Name" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="tel" id="phoneNumber" placeholder="Phone Number" required>
+                    </div>
+                </div>
+
+                <!-- Part 2: Farm Details -->
+                <div class="form-section">
+                    <h3>Farm Details</h3>
+                    <div class="input-group">
+                        <select id="section" onchange="updateUnits()" required>
+                            <option value="">Select Section</option>
+                            <option value="Kraba">Kraba</option>
+                            <option value="Tebere">Tebere</option>
+                            <option value="Wamunu">Wamunu</option>
+                            <option value="Wea">Wea</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <select id="unit" required disabled>
+                            <option value="">Select Unit</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <input type="number" id="quantity" placeholder="Number of acres/bags" min="1" required>
+                        <span id="quantityLabel">acres</span>
+                    </div>
+                    <div class="input-group">
+                        <input type="date" id="serviceDate" required>
+                    </div>
+                </div>
+
+                <button type="button" id="bookBtn" onclick="showPricing()" class="primary-btn">Book</button>
+            </form>
+
+            <!-- Part 3: Price Calculation (Hidden initially) -->
+            <div id="pricingSection" class="form-section hidden">
+                <h3>Service Summary</h3>
+                <div class="price-breakdown">
+                    <div class="price-item">
+                        <span>Service:</span>
+                        <span id="serviceType">-</span>
+                    </div>
+                    <div class="price-item">
+                        <span>Quantity:</span>
+                        <span id="serviceQuantity">-</span>
+                    </div>
+                    <div class="price-item">
+                        <span>Rate:</span>
+                        <span id="serviceRate">-</span>
+                    </div>
+                    <div class="price-item total">
+                        <span>Total Amount:</span>
+                        <span id="totalAmount">KSH 0</span>
+                    </div>
+                </div>
+                <button type="button" onclick="completeBooking()" class="primary-btn complete-btn">Complete Booking Service</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Page -->
+    <div id="successPage" class="page hidden">
+        <div class="container">
+            <div class="success-message">
+                <div class="success-icon">✅</div>
+                <h2>Booked Successfully!</h2>
+                <p>Your service has been booked. We will contact you soon.</p>
+                <button onclick="goHome()" class="primary-btn">Book Another Service</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentService = '';
+        let currentRate = 0;
+        let currentUnit = '';
+
+        // Section-Unit mapping
+        const sectionUnits = {
+            'Kraba': ['K1', 'K2', 'K3', 'K4'],
+            'Tebere': ['T1', 'T2', 'T3', 'T4'],
+            'Wamunu': ['W1', 'W2', 'W3', 'W4'],
+            'Wea': ['M1', 'M2', 'M3', 'M4', 'M5', 'M6']
+        };
+
+        // Service selection function
+        function selectService(serviceName, rate, unit) {
+            currentService = serviceName;
+            currentRate = rate;
+            currentUnit = unit;
+            
+            // Update header
+            document.getElementById('bookingHeader').textContent = `You are booking for ${serviceName}`;
+            
+            // Update quantity label
+            document.getElementById('quantityLabel').textContent = unit === 'acre' ? 'acres' : 'bags';
+            document.getElementById('quantity').placeholder = `Number of ${unit === 'acre' ? 'acres' : 'bags'}`;
+            
+            // Show booking page
+            showPage('bookingPage');
+            
+            // Reset form
+            resetForm();
+        }
+
+        // Update units dropdown based on section selection
+        function updateUnits() {
+            const sectionSelect = document.getElementById('section');
+            const unitSelect = document.getElementById('unit');
+            const selectedSection = sectionSelect.value;
+            
+            // Clear unit options
+            unitSelect.innerHTML = '<option value="">Select Unit</option>';
+            
+            if (selectedSection && sectionUnits[selectedSection]) {
+                // Enable unit dropdown
+                unitSelect.disabled = false;
+                
+                // Populate units for selected section
+                sectionUnits[selectedSection].forEach(unit => {
+                    const option = document.createElement('option');
+                    option.value = unit;
+                    option.textContent = unit;
+                    unitSelect.appendChild(option);
+                });
+            } else {
+                // Disable unit dropdown if no section selected
+                unitSelect.disabled = true;
+            }
+        }
+
+        // Show pricing section
+        function showPricing() {
+            // Validate form inputs
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const section = document.getElementById('section').value;
+            const unit = document.getElementById('unit').value;
+            const quantity = document.getElementById('quantity').value;
+            const serviceDate = document.getElementById('serviceDate').value;
+            
+            // Check if all fields are filled
+            if (!firstName || !lastName || !phoneNumber || !section || !unit || !quantity || !serviceDate) {
+                alert('Please fill in all fields before proceeding.');
+                return;
+            }
+            
+            // Validate phone number (basic validation)
+            if (phoneNumber.length < 10) {
+                alert('Please enter a valid phone number.');
+                return;
+            }
+            
+            // Validate quantity
+            if (quantity <= 0) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
+            
+            // Calculate total amount
+            const totalAmount = quantity * currentRate;
+            
+            // Update pricing section with fresh data
+            document.getElementById('serviceType').textContent = currentService;
+            document.getElementById('serviceQuantity').textContent = `${quantity} ${currentUnit === 'acre' ? 'acres' : 'bags'}`;
+            document.getElementById('serviceRate').textContent = `KSH ${currentRate.toLocaleString()} per ${currentUnit}`;
+            document.getElementById('totalAmount').textContent = `KSH ${totalAmount.toLocaleString()}`;
+            
+            // First hide book button completely
+            document.getElementById('bookBtn').style.display = 'none';
+            
+            // Then show pricing section with animation
+            const pricingSection = document.getElementById('pricingSection');
+            pricingSection.style.display = 'block';
+            pricingSection.classList.remove('hidden');
+            pricingSection.classList.add('show');
+            pricingSection.classList.add('fade-in');
+            
+            // Smooth scroll to pricing section
+            setTimeout(() => {
+                pricingSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 300);
+        }
+
+        // Complete booking
+        function completeBooking() {
+            // Add loading state
+            const completeBtn = document.querySelector('.complete-btn');
+            const originalText = completeBtn.textContent;
+            completeBtn.textContent = 'Processing...';
+            completeBtn.classList.add('loading');
+            
+            // Simulate booking process
+            setTimeout(() => {
+                // Hide the pricing section (Part 3)
+                const pricingSection = document.getElementById('pricingSection');
+                pricingSection.style.display = 'none';
+                pricingSection.classList.add('hidden');
+                pricingSection.classList.remove('show');
+                
+                // Show the Book button again
+                document.getElementById('bookBtn').style.display = 'block';
+                
+                // Clear the pricing section data
+                clearPricingSection();
+                
+                // Reset button state
+                completeBtn.textContent = originalText;
+                completeBtn.classList.remove('loading');
+                
+                // Show success message briefly, then return to form
+                showPage('successPage');
+                
+                // After 3 seconds, go back to booking page with fresh form
+                setTimeout(() => {
+                    showPage('bookingPage');
+                }, 3000);
+            }, 2000);
+        }
+
+        // Navigation functions
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.remove('hidden');
+            document.getElementById(pageId).classList.add('fade-in');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function goBack() {
+            showPage('mainPage');
+            resetForm();
+        }
+
+        function goHome() {
+            showPage('mainPage');
+            resetForm();
+        }
+
+        function goToHome() {
+            // Navigate to home.html
+            window.location.href = 'home.html';
+        }
+
+        // Reset form function
+        function resetForm() {
+            // Reset form fields
+            document.getElementById('bookingForm').reset();
+            
+            // Reset dropdowns
+            document.getElementById('unit').disabled = true;
+            document.getElementById('unit').innerHTML = '<option value="">Select Unit</option>';
+            
+            // Ensure pricing section is completely hidden
+            const pricingSection = document.getElementById('pricingSection');
+            pricingSection.style.display = 'none';
+            pricingSection.classList.add('hidden');
+            pricingSection.classList.remove('show');
+            pricingSection.classList.remove('fade-in');
+            
+            // Show book button again
+            document.getElementById('bookBtn').style.display = 'block';
+            
+            // Clear pricing section data
+            clearPricingSection();
+            
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('serviceDate').setAttribute('min', today);
+        }
+
+        // Clear pricing section data
+        function clearPricingSection() {
+            document.getElementById('serviceType').textContent = '-';
+            document.getElementById('serviceQuantity').textContent = '-';
+            document.getElementById('serviceRate').textContent = '-';
+            document.getElementById('totalAmount').textContent = 'KSH 0';
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('serviceDate').setAttribute('min', today);
+            
+            // Show main page
+            showPage('mainPage');
+            
+            // Add form validation
+            const form = document.getElementById('bookingForm');
+            const inputs = form.querySelectorAll('input, select');
+            
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Remove error styling when user starts typing
+                    this.style.borderColor = '#e2e8f0';
+                });
+                
+                input.addEventListener('invalid', function() {
+                    // Add error styling for invalid inputs
+                    this.style.borderColor = '#e53e3e';
+                });
+            });
+            
+            // Format phone number input
+            document.getElementById('phoneNumber').addEventListener('input', function(e) {
+                // Remove non-numeric characters
+                let value = e.target.value.replace(/\D/g, '');
+                
+                // Limit to reasonable phone number length
+                if (value.length > 12) {
+                    value = value.slice(0, 12);
+                }
+                
+                e.target.value = value;
+            });
+            
+            // Validate names (only letters and spaces)
+            const nameInputs = ['firstName', 'lastName'];
+            nameInputs.forEach(inputId => {
+                document.getElementById(inputId).addEventListener('input', function(e) {
+                    // Allow only letters and spaces
+                    e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                });
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showPricing();
+        });
+
+        // Add touch feedback for mobile
+        document.addEventListener('touchstart', function() {}, true);
+    </script>
+</body>
+</html>

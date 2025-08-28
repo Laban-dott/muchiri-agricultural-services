@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muchiri Agricultural Services</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="home-container">
+        <!-- Header Section -->
+        <header class="hero-section">
+            <div class="hero-content">
+                <h1>Muchiri Agricultural Services</h1>
+                <p class="tagline">Professional Farm Services at Your Fingertips</p>
+            </div>
+        </header>
+
+        <!-- Services Gallery -->
+        <section class="services-gallery">
+            <h2>Our Services</h2>
+            
+            <div class="service-showcase">
+                <div class="service-image-card">
+                    <div class="service-image rotavation-img">
+                        <div class="image-overlay">
+                            <h3>🚜 Rotavation</h3>
+                            <p>Professional land preparation</p>
+                            <span class="price">KSH 5,000/acre</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="service-image-card">
+                    <div class="service-image transport-img">
+                        <div class="image-overlay">
+                            <h3>🚚 Transport</h3>
+                            <p>Reliable cargo transport</p>
+                            <span class="price">KSH 150/bag</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="service-image-card">
+                    <div class="service-image harvesting-img">
+                        <div class="image-overlay">
+                            <h3>🌾 Harvesting</h3>
+                            <p>Efficient crop harvesting</p>
+                            <span class="price">KSH 6,000/acre</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <div class="feature-item">
+                <div class="feature-icon">⚡</div>
+                <h3>Fast Service</h3>
+                <p>Quick response and efficient work</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">💯</div>
+                <h3>Quality Work</h3>
+                <p>Professional and reliable service</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📱</div>
+                <h3>Easy Booking</h3>
+                <p>Book services with just a few taps</p>
+            </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="action-buttons">
+            <button onclick="bookService()" class="btn-primary book-btn">
+                <span class="btn-icon">📋</span>
+                Book Service
+            </button>
+            
+            <button onclick="driverLogin()" class="btn-secondary login-btn">
+                <span class="btn-icon">👤</span>
+                Driver Login
+            </button>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Muchiri Agricultural Services</p>
+            <p>Professional • Reliable • Efficient</p>
+        </footer>
+    </div>
+
+    <script>
+        // Navigation functions
+        function bookService() {
+            // Redirect to booking page
+            window.location.href = 'index.html';
+        }
+
+        function driverLogin() {
+            // Redirect to driver dashboard
+            window.location.href = 'dashboard.html';
+        }
+
+        // Add touch feedback for mobile
+        document.addEventListener('touchstart', function() {}, true);
+
+        // Smooth scroll animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add fade-in animation to elements
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all service cards and feature items
+            document.querySelectorAll('.service-image-card, .feature-item').forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
