@@ -5,14 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driver Dashboard - Muchiri Services</title>
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Firebase Scripts -->
     <script type="module">
-        // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
         import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
-        
-        // Firebase configuration (same as booking system)
         const firebaseConfig = {
             apiKey: "AIzaSyDemoKey-ReplaceWithActualKey",
             authDomain: "muchiri-services.firebaseapp.com",
@@ -22,24 +17,18 @@
             messagingSenderId: "123456789012",
             appId: "1:123456789012:web:abcdef123456"
         };
-        
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        
-        // Make Firebase functions available globally
         window.firebaseDB = { database, ref, onValue, update };
     </script>
 </head>
 <body>
-    <!-- Login Page -->
     <div id="loginPage" class="page">
         <div class="login-container">
             <div class="login-header">
                 <h1>🚜 Driver Login</h1>
                 <p>Access your service dashboard</p>
             </div>
-            
             <form id="loginForm" class="login-form">
                 <div class="input-group">
                     <input type="text" id="username" placeholder="Username" required>
@@ -49,17 +38,13 @@
                 </div>
                 <button type="submit" class="login-btn">Login</button>
             </form>
-            
             <div class="login-footer">
                 <button onclick="goHome()" class="back-home-btn">← Back to Home</button>
             </div>
         </div>
     </div>
-
-    <!-- Dashboard Page -->
     <div id="dashboardPage" class="page hidden">
         <div class="dashboard-container">
-            <!-- Header -->
             <header class="dashboard-header">
                 <div class="header-content">
                     <h1>Driver Dashboard</h1>
@@ -80,8 +65,6 @@
                     </div>
                 </div>
             </header>
-
-            <!-- Tab Navigation -->
             <div class="tab-navigation">
                 <button class="tab-btn active" onclick="showTab('pending')">
                     Pending <span id="pendingCount" class="count-badge">0</span>
@@ -93,58 +76,39 @@
                     All Bookings <span id="allCount" class="count-badge">0</span>
                 </button>
             </div>
-
-            <!-- Bookings Content -->
             <div class="bookings-content">
-                <!-- Pending Bookings -->
                 <div id="pendingTab" class="tab-content active">
                     <div class="section-header">
                         <h2>📋 Pending Services</h2>
                         <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
                     </div>
-                    <div id="pendingBookings" class="bookings-list">
-                        <!-- Pending bookings will be loaded here -->
-                    </div>
+                    <div id="pendingBookings" class="bookings-list"></div>
                 </div>
-
-                <!-- Completed Bookings -->
                 <div id="completedTab" class="tab-content">
                     <div class="section-header">
                         <h2>✅ Completed Services</h2>
                         <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
                     </div>
-                    <div id="completedBookings" class="bookings-list">
-                        <!-- Completed bookings will be loaded here -->
-                    </div>
+                    <div id="completedBookings" class="bookings-list"></div>
                 </div>
-
-                <!-- All Bookings -->
                 <div id="allTab" class="tab-content">
                     <div class="section-header">
                         <h2>📊 All Services</h2>
                         <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
                     </div>
-                    <div id="allBookings" class="bookings-list">
-                        <!-- All bookings will be loaded here -->
-                    </div>
+                    <div id="allBookings" class="bookings-list"></div>
                 </div>
             </div>
         </div>
     </div>
-
     <script>
-        // Global bookings data
         let bookingsData = [];
-
-        // Load bookings from Firebase or localStorage
         function loadBookingsData() {
             if (window.firebaseDB) {
-                // Load from Firebase
                 const bookingsRef = window.firebaseDB.ref(window.firebaseDB.database, 'bookings');
                 window.firebaseDB.onValue(bookingsRef, (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
-                        // Convert Firebase data to array format
                         bookingsData = Object.keys(data).map(key => ({
                             id: key,
                             ...data[key]
@@ -164,15 +128,12 @@
                 loadFromLocalStorage();
             }
         }
-
-        // Fallback to localStorage
         function loadFromLocalStorage() {
             const storedBookings = localStorage.getItem('muchiri_bookings');
             if (storedBookings) {
                 bookingsData = JSON.parse(storedBookings);
                 console.log('Loaded bookings from localStorage:', bookingsData);
             } else {
-                // Use sample data if no stored data
                 bookingsData = [
                     {
                         id: 'sample1',
@@ -193,14 +154,10 @@
             updateStats();
             renderBookings();
         }
-
-        // Login functionality
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
-            // Simple authentication (in real app, use proper authentication)
             if (username === 'muchiri' && password === '54321') {
                 showPage('dashboardPage');
                 loadDashboard();
@@ -208,71 +165,53 @@
                 alert('Invalid username or password');
             }
         });
-
-        // Page navigation
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.add('hidden');
             });
             document.getElementById(pageId).classList.remove('hidden');
         }
-
         function goHome() {
             window.location.href = 'home.html';
         }
-
         function logout() {
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             showPage('loginPage');
         }
-
-        // Tab functionality
         function showTab(tabName) {
-            // Remove active from all tabs
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            
-            // Add active to selected tab
             event.target.classList.add('active');
             document.getElementById(tabName + 'Tab').classList.add('active');
         }
-
-        // Load dashboard data
         function loadDashboard() {
-            loadBookingsData(); // This will call updateStats() and renderBookings()
+            loadBookingsData();
         }
-
         function updateStats() {
             const total = bookingsData.length;
             const completed = bookingsData.filter(b => b.status === 'completed').length;
             const pending = bookingsData.filter(b => b.status === 'pending').length;
-            
             document.getElementById('totalBookings').textContent = total;
             document.getElementById('completedBookings').textContent = completed;
             document.getElementById('pendingBookings').textContent = pending;
-            
             document.getElementById('pendingCount').textContent = pending;
             document.getElementById('completedCount').textContent = completed;
             document.getElementById('allCount').textContent = total;
         }
-
         function renderBookings() {
             const pendingBookings = bookingsData.filter(b => b.status === 'pending');
             const completedBookings = bookingsData.filter(b => b.status === 'completed');
-            
             renderBookingsList('pendingBookings', pendingBookings);
             renderBookingsList('completedBookings', completedBookings);
             renderBookingsList('allBookings', bookingsData);
         }
-
         function renderBookingsList(containerId, bookings) {
             const container = document.getElementById(containerId);
-            
             if (bookings.length === 0) {
                 container.innerHTML = `
                     <div class="no-bookings">
@@ -282,7 +221,6 @@
                 `;
                 return;
             }
-            
             container.innerHTML = bookings.map(booking => `
                 <div class="booking-card ${booking.status}">
                     <div class="booking-header">
@@ -292,7 +230,6 @@
                         </div>
                         <div class="booking-amount">${booking.amount}</div>
                     </div>
-                    
                     <div class="customer-info">
                         <div class="info-row">
                             <span class="label">Customer:</span>
@@ -315,7 +252,6 @@
                             <span class="value">${formatDate(booking.date)}</span>
                         </div>
                     </div>
-                    
                     ${booking.status === 'pending' ? `
                         <div class="booking-actions">
                             <button onclick="markCompleted(${booking.id})" class="complete-btn">
@@ -326,7 +262,6 @@
                 </div>
             `).join('');
         }
-
         function getServiceIcon(service) {
             switch (service) {
                 case 'Rotavation': return '🚜';
@@ -335,7 +270,6 @@
                 default: return '🔧';
             }
         }
-
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', { 
@@ -344,20 +278,16 @@
                 day: 'numeric' 
             });
         }
-
         function markCompleted(bookingId) {
             const booking = bookingsData.find(b => b.id === bookingId);
             if (booking) {
                 booking.status = 'completed';
-                
-                // Update in Firebase if available
                 if (window.firebaseDB && typeof bookingId === 'string' && bookingId !== 'sample1') {
                     const bookingRef = window.firebaseDB.ref(window.firebaseDB.database, `bookings/${bookingId}`);
                     window.firebaseDB.update(bookingRef, { status: 'completed' })
                         .then(() => console.log('Status updated in Firebase'))
                         .catch((error) => console.error('Error updating Firebase:', error));
                 } else {
-                    // Update localStorage if Firebase not available
                     const storedBookings = JSON.parse(localStorage.getItem('muchiri_bookings') || '[]');
                     const bookingIndex = storedBookings.findIndex(b => b.id === bookingId);
                     if (bookingIndex !== -1) {
@@ -365,11 +295,8 @@
                         localStorage.setItem('muchiri_bookings', JSON.stringify(storedBookings));
                     }
                 }
-                
                 updateStats();
                 renderBookings();
-                
-                // Show success message
                 const successMsg = document.createElement('div');
                 successMsg.className = 'success-message';
                 successMsg.textContent = 'Service marked as completed!';
@@ -385,7 +312,6 @@
                     animation: slideIn 0.3s ease;
                 `;
                 document.body.appendChild(successMsg);
-                
                 setTimeout(() => {
                     if (document.body.contains(successMsg)) {
                         document.body.removeChild(successMsg);
@@ -393,21 +319,16 @@
                 }, 3000);
             }
         }
-
         function refreshBookings() {
-            // Refresh data from Firebase or localStorage
             const refreshBtn = event.target;
             refreshBtn.textContent = '🔄 Refreshing...';
             refreshBtn.disabled = true;
-            
             setTimeout(() => {
-                loadBookingsData(); // Reload fresh data
+                loadBookingsData();
                 refreshBtn.textContent = '🔄 Refresh';
                 refreshBtn.disabled = false;
             }, 1000);
         }
-
-        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             showPage('loginPage');
         });
