@@ -1,4 +1,3 @@
-/* Reset and Base Styles */
 * {
     margin: 0;
     padding: 0;
@@ -18,7 +17,6 @@ body {
     margin: 0 auto;
 }
 
-/* Page Management */
 .page {
     min-height: 100vh;
     display: flex;
@@ -30,11 +28,6 @@ body {
     display: none;
 }
 
-/* =============================================
-   BOOKING SYSTEM STYLES (index.html)
-   ============================================= */
-
-/* Main Page Styles */
 h1 {
     text-align: center;
     color: white;
@@ -92,7 +85,6 @@ h1 {
     font-weight: 500;
 }
 
-/* Booking Page Styles */
 .back-btn {
     color: white;
     font-size: 1.1rem;
@@ -142,7 +134,6 @@ h1 {
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-/* Form Styles */
 .form-section {
     background: white;
     border-radius: 15px;
@@ -204,7 +195,6 @@ select:disabled {
     cursor: not-allowed;
 }
 
-/* Button Styles */
 .primary-btn {
     width: 100%;
     padding: 18px;
@@ -237,7 +227,6 @@ select:disabled {
     box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
 }
 
-/* Price Section Styles */
 #pricingSection {
     display: none;
 }
@@ -274,7 +263,6 @@ select:disabled {
     padding-top: 15px;
 }
 
-/* Success Page Styles */
 .success-message {
     background: white;
     border-radius: 20px;
@@ -303,16 +291,11 @@ select:disabled {
     line-height: 1.5;
 }
 
-/* =============================================
-   HOME PAGE STYLES (home.html)
-   ============================================= */
-
 .home-container {
     max-width: 100%;
     overflow-x: hidden;
 }
 
-/* Hero Section */
 .hero-section {
     padding: 60px 20px 40px;
     text-align: center;
@@ -334,7 +317,6 @@ select:disabled {
     letter-spacing: 0.5px;
 }
 
-/* Services Gallery */
 .services-gallery {
     padding: 50px 20px;
     background: rgba(255,255,255,0.95);
@@ -384,20 +366,19 @@ select:disabled {
     transform: scale(1.05);
 }
 
-/* Service Background Images */
 .rotavation-img {
     background: linear-gradient(135deg, rgba(34, 139, 34, 0.8), rgba(50, 205, 50, 0.8)),
-                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23228B22" width="400" height="200"/><circle fill="%23FFA500" cx="100" cy="100" r="30"/><rect fill="%238B4513" x="130" y="90" width="140" height="20" rx="10"/><circle fill="%23555" cx="320" cy="140" r="25"/><circle fill="%23555" cx="280" cy="140" r="25"/><path fill="%23654321" d="M50 150 Q200 120 350 150 L350 200 L50 200 Z"/></svg>');
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23228B22" width="400" height="200"/><circle fill="%23FFA500" cx="100" cy="100" r="30"[...]
 }
 
 .transport-img {
     background: linear-gradient(135deg, rgba(30, 144, 255, 0.8), rgba(70, 130, 180, 0.8)),
-                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%231E90FF" width="400" height="200"/><rect fill="%23FF6347" x="50" y="80" width="120" height="60" rx="5"/><rect fill="%23FFD700" x="170" y="90" width="80" height="40" rx="3"/><circle fill="%23333" cx="80" cy="160" r="20"/><circle fill="%23333" cx="200" cy="160" r="20"/><rect fill="%23C0C0C0" x="250" y="70" width="100" height="80" rx="5"/><path fill="%23696969" d="M0 180 Q200 160 400 180 L400 200 L0 200 Z"/></svg>');
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%231E90FF" width="400" height="200"/><rect fill="%23FF6347" x="50" y="80" width="120" [...]
 }
 
 .harvesting-img {
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.8), rgba(255, 140, 0, 0.8)),
-                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23FFD700" width="400" height="200"/><rect fill="%23228B22" x="0" y="160" width="400" height="40"/><path fill="%23FF8C00" d="M100 60 L120 40 L140 60 L160 40 L180 60 L200 40 L220 60 L240 40 L260 60 L280 40 L300 60 L320 100 L280 120 L240 100 L200 120 L160 100 L120 120 L100 100 Z"/><rect fill="%238B4513" x="150" y="100" width="100" height="40" rx="5"/><circle fill="%23333" cx="180" cy="160" r="15"/><circle fill="%23333" cx="220" cy="160" r="15"/></svg>');
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect fill="%23FFD700" width="400" height="200"/><rect fill="%23228B22" x="0" y="160" width="400" [...]
 }
 
 .image-overlay {
@@ -432,7 +413,6 @@ select:disabled {
     display: inline-block;
 }
 
-/* Features Section */
 .features {
     padding: 50px 20px;
     background: rgba(255,255,255,0.95);
@@ -477,7 +457,6 @@ select:disabled {
     line-height: 1.5;
 }
 
-/* Action Buttons */
 .action-buttons {
     padding: 50px 20px;
     display: flex;
@@ -528,7 +507,6 @@ select:disabled {
     font-size: 1.3rem;
 }
 
-/* Footer */
 .footer {
     padding: 40px 20px;
     text-align: center;
@@ -550,11 +528,6 @@ select:disabled {
     font-size: 0.8rem;
 }
 
-/* =============================================
-   DASHBOARD STYLES (dashboard.html)
-   ============================================= */
-
-/* Login Page Styles */
 .login-container {
     background: white;
     border-radius: 20px;
@@ -624,7 +597,6 @@ select:disabled {
     text-align: center;
 }
 
-/* Dashboard Page Styles */
 #dashboardPage {
     align-items: flex-start;
     padding: 0;
@@ -637,7 +609,6 @@ select:disabled {
     background: rgba(255,255,255,0.95);
 }
 
-/* Dashboard Header */
 .dashboard-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -697,7 +668,6 @@ select:disabled {
     opacity: 0.9;
 }
 
-/* Tab Navigation */
 .tab-navigation {
     display: flex;
     background: white;
@@ -739,7 +709,6 @@ select:disabled {
     background: #667eea;
 }
 
-/* Bookings Content */
 .bookings-content {
     padding: 20px;
 }
@@ -785,7 +754,6 @@ select:disabled {
     cursor: not-allowed;
 }
 
-/* Bookings List */
 .bookings-list {
     display: flex;
     flex-direction: column;
@@ -897,7 +865,6 @@ select:disabled {
     background: #38a169;
 }
 
-/* No Bookings State */
 .no-bookings {
     text-align: center;
     padding: 60px 20px;
@@ -912,10 +879,6 @@ select:disabled {
 .no-bookings p {
     font-size: 1.1rem;
 }
-
-/* =============================================
-   RESPONSIVE DESIGN
-   ============================================= */
 
 @media (max-width: 480px) {
     .container {
@@ -946,7 +909,6 @@ select:disabled {
         padding: 15px;
     }
     
-    /* Home page responsive */
     .hero-content h1 {
         font-size: 2rem;
     }
@@ -976,7 +938,6 @@ select:disabled {
         font-size: 1.1rem;
     }
     
-    /* Dashboard responsive */
     .dashboard-header {
         padding: 20px 15px;
     }
@@ -998,88 +959,3 @@ select:disabled {
     }
     
     .bookings-content {
-        padding: 15px;
-    }
-    
-    .booking-card {
-        padding: 15px;
-    }
-    
-    .booking-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    
-    .booking-amount {
-        font-size: 1.1rem;
-    }
-    
-    .tab-btn {
-        font-size: 0.8rem;
-        padding: 12px 8px;
-    }
-    
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    
-    .section-header h2 {
-        font-size: 1.1rem;
-    }
-}
-
-/* =============================================
-   LOADING STATES & ANIMATIONS
-   ============================================= */
-
-.loading {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-/* Animation for smooth transitions */
-.fade-in {
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* Loading States */
-.btn-primary:active, .btn-secondary:active {
-    transform: translateY(0);
-    transition: transform 0.1s ease;
-}

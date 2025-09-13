@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="home-container">
-        <!-- Header Section -->
         <header class="hero-section">
             <div class="hero-content">
                 <h1>Muchiri Agricultural Services</h1>
@@ -16,7 +15,6 @@
             </div>
         </header>
 
-        <!-- Services Gallery -->
         <section class="services-gallery">
             <h2>Our Services</h2>
             
@@ -53,7 +51,6 @@
             </div>
         </section>
 
-        <!-- Features Section -->
         <section class="features">
             <div class="feature-item">
                 <div class="feature-icon">⚡</div>
@@ -72,7 +69,6 @@
             </div>
         </section>
 
-        <!-- Action Buttons -->
         <section class="action-buttons">
             <button onclick="bookService()" class="btn-primary book-btn">
                 <span class="btn-icon">📋</span>
@@ -85,7 +81,6 @@
             </button>
         </section>
 
-        <!-- Footer -->
         <footer class="footer">
             <p>&copy; 2025 Muchiri Agricultural Services</p>
             <p>Professional • Reliable • Efficient</p>
@@ -93,23 +88,17 @@
     </div>
 
     <script>
-        // Navigation functions
         function bookService() {
-            // Redirect to booking page
             window.location.href = 'index.html';
         }
 
         function driverLogin() {
-            // Redirect to driver dashboard
             window.location.href = 'dashboard.html';
         }
 
-        // Add touch feedback for mobile
         document.addEventListener('touchstart', function() {}, true);
 
-        // Smooth scroll animations
         document.addEventListener('DOMContentLoaded', function() {
-            // Add fade-in animation to elements
             const observerOptions = {
                 threshold: 0.1,
                 rootMargin: '0px 0px -50px 0px'
@@ -123,7 +112,6 @@
                 });
             }, observerOptions);
 
-            // Observe all service cards and feature items
             document.querySelectorAll('.service-image-card, .feature-item').forEach(el => {
                 observer.observe(el);
             });
