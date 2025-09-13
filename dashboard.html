@@ -101,7 +101,14 @@
                 <div id="pendingTab" class="tab-content active">
                     <div class="section-header">
                         <h2>📋 Pending Services</h2>
-                        <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
+                        <div class="section-actions">
+                            <div class="bulk-select-controls">
+                                <button onclick="selectAllInSection('pendingBookings')" class="select-all-btn">Select All</button>
+                                <button onclick="clearSelectionInSection('pendingBookings')" class="clear-selection-btn">Clear</button>
+                                <button onclick="deleteSelectedBookings('pendingBookings')" class="delete-selected-btn" disabled>Delete Selected</button>
+                            </div>
+                            <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
+                        </div>
                     </div>
                     <div id="pendingBookings" class="bookings-list">
                         <!-- Pending bookings will be loaded here -->
@@ -112,7 +119,14 @@
                 <div id="completedTab" class="tab-content">
                     <div class="section-header">
                         <h2>✅ Completed Services</h2>
-                        <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
+                        <div class="section-actions">
+                            <div class="bulk-select-controls">
+                                <button onclick="selectAllInSection('completedBookings')" class="select-all-btn">Select All</button>
+                                <button onclick="clearSelectionInSection('completedBookings')" class="clear-selection-btn">Clear</button>
+                                <button onclick="deleteSelectedBookings('completedBookings')" class="delete-selected-btn" disabled>Delete Selected</button>
+                            </div>
+                            <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
+                        </div>
                     </div>
                     <div id="completedBookings" class="bookings-list">
                         <!-- Completed bookings will be loaded here -->
@@ -123,7 +137,14 @@
                 <div id="allTab" class="tab-content">
                     <div class="section-header">
                         <h2>📊 All Services</h2>
-                        <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
+                        <div class="section-actions">
+                            <div class="bulk-select-controls">
+                                <button onclick="selectAllInSection('allBookings')" class="select-all-btn">Select All</button>
+                                <button onclick="clearSelectionInSection('allBookings')" class="clear-selection-btn">Clear</button>
+                                <button onclick="deleteSelectedBookings('allBookings')" class="delete-selected-btn" disabled>Delete Selected</button>
+                            </div>
+                            <button onclick="refreshBookings()" class="refresh-btn">🔄 Refresh</button>
+                        </div>
                     </div>
                     <div id="allBookings" class="bookings-list">
                         <!-- All bookings will be loaded here -->
@@ -287,6 +308,9 @@
             container.innerHTML = bookings.map(booking => `
                 <div class="booking-card ${booking.status}">
                     <div class="booking-header">
+                        <div class="booking-select">
+                            <input type="checkbox" class="booking-checkbox" data-booking-id="${booking.id}" onchange="updateDeleteButton()">
+                        </div>
                         <div class="service-info">
                             <h3>${getServiceIcon(booking.service)} ${booking.service}</h3>
                             <span class="status-badge ${booking.status}">${booking.status.toUpperCase()}</span>
@@ -322,8 +346,17 @@
                             <button onclick="markCompleted(${booking.id})" class="complete-btn">
                                 ✅ Mark Complete
                             </button>
+                            <button onclick="deleteBooking('${booking.id}')" class="delete-single-btn">
+                                🗑️ Delete
+                            </button>
                         </div>
-                    ` : ''}
+                    ` : `
+                        <div class="booking-actions">
+                            <button onclick="deleteBooking('${booking.id}')" class="delete-single-btn">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    `}
                 </div>
             `).join('');
         }
@@ -349,13 +382,44 @@
         function markCompleted(bookingId) {
             const booking = bookingsData.find(b => b.id === bookingId);
             if (booking && booking.status === 'pending') {
-                // Add visual feedback immediately
+                // Get the booking card element for animation
+                const bookingCard = document.querySelector(`button[onclick="markCompleted('${bookingId}')"]`).closest('.booking-card');
                 const button = document.querySelector(`button[onclick="markCompleted('${bookingId}')"]`);
-                if (button) {
+                
+                if (button && bookingCard) {
+                    // Step 1: Show processing state
                     button.innerHTML = '⏳ Processing...';
                     button.disabled = true;
                     button.style.opacity = '0.7';
                     button.style.cursor = 'not-allowed';
+                    
+                    // Step 2: Add completion animation to card
+                    bookingCard.style.transition = 'all 0.5s ease';
+                    bookingCard.style.transform = 'scale(1.02)';
+                    bookingCard.style.boxShadow = '0 8px 35px rgba(16, 185, 129, 0.3)';
+                    bookingCard.style.borderLeftColor = '#10b981';
+                    
+                    // Step 3: Show DONE tag temporarily
+                    const doneTag = document.createElement('div');
+                    doneTag.className = 'done-tag-animation';
+                    doneTag.innerHTML = '✅ DONE';
+                    doneTag.style.cssText = `
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%) scale(0);
+                        background: linear-gradient(135deg, #10b981, #059669);
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 25px;
+                        font-weight: 700;
+                        font-size: 1.2rem;
+                        z-index: 1000;
+                        animation: doneAnimation 1.5s ease-out forwards;
+                        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+                    `;
+                    bookingCard.style.position = 'relative';
+                    bookingCard.appendChild(doneTag);
                 }
 
                 // Update booking status
@@ -371,11 +435,11 @@
                     })
                     .then(() => {
                         console.log('Status updated in Firebase');
-                        setTimeout(() => refreshDashboardUI(bookingId), 500);
+                        setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
                     })
                     .catch((error) => {
                         console.error('Error updating Firebase:', error);
-                        setTimeout(() => refreshDashboardUI(bookingId), 500);
+                        setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
                     });
                 } else {
                     // Update localStorage if Firebase not available
@@ -386,8 +450,30 @@
                         storedBookings[bookingIndex].completedAt = booking.completedAt;
                         localStorage.setItem('muchiri_bookings', JSON.stringify(storedBookings));
                     }
-                    setTimeout(() => refreshDashboardUI(bookingId), 500);
+                    setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
                 }
+            }
+        }
+
+        // Helper function to complete the transition
+        function completeTransition(bookingId, bookingCard) {
+            // Remove the DONE tag
+            const doneTag = bookingCard.querySelector('.done-tag-animation');
+            if (doneTag) {
+                doneTag.remove();
+            }
+            
+            // Reset card styling
+            bookingCard.style.transform = '';
+            bookingCard.style.boxShadow = '';
+            
+            // Update UI
+            refreshDashboardUI(bookingId);
+            
+            // Show success message
+            const completedBooking = bookingsData.find(b => b.id === bookingId);
+            if (completedBooking) {
+                showSuccessMessage(`🎉 ${completedBooking.service} service completed for ${completedBooking.customer}! Now in Completed tab.`);
             }
         }
 
@@ -468,6 +554,136 @@
                 refreshBtn.textContent = '🔄 Refresh';
                 refreshBtn.disabled = false;
             }, 1000);
+        }
+
+        // Delete functionality
+        function deleteBooking(bookingId) {
+            const booking = bookingsData.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            const confirmMessage = `Are you sure you want to delete this booking?\n\nService: ${booking.service}\nCustomer: ${booking.customer}\nAmount: ${booking.amount}`;
+            
+            if (confirm(confirmMessage)) {
+                performDeleteOperation([bookingId], `Deleted ${booking.service} booking for ${booking.customer}`);
+            }
+        }
+        
+        function selectAllInSection(sectionId) {
+            const checkboxes = document.querySelectorAll(`#${sectionId} .booking-checkbox`);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateDeleteButton();
+        }
+        
+        function clearSelectionInSection(sectionId) {
+            const checkboxes = document.querySelectorAll(`#${sectionId} .booking-checkbox`);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateDeleteButton();
+        }
+        
+        function updateDeleteButton() {
+            // Update delete buttons for each section
+            ['pendingBookings', 'completedBookings', 'allBookings'].forEach(sectionId => {
+                const checkboxes = document.querySelectorAll(`#${sectionId} .booking-checkbox:checked`);
+                const deleteBtn = document.querySelector(`button[onclick="deleteSelectedBookings('${sectionId}')"]`);
+                if (deleteBtn) {
+                    deleteBtn.disabled = checkboxes.length === 0;
+                    deleteBtn.textContent = checkboxes.length > 0 ? `Delete Selected (${checkboxes.length})` : 'Delete Selected';
+                }
+            });
+        }
+        
+        function deleteSelectedBookings(sectionId) {
+            const checkboxes = document.querySelectorAll(`#${sectionId} .booking-checkbox:checked`);
+            const selectedIds = Array.from(checkboxes).map(cb => cb.dataset.bookingId);
+            
+            if (selectedIds.length === 0) return;
+            
+            const selectedBookings = bookingsData.filter(b => selectedIds.includes(b.id.toString()));
+            const confirmMessage = `Are you sure you want to delete ${selectedIds.length} selected booking(s)?\n\n` +
+                selectedBookings.map(b => `• ${b.service} - ${b.customer} (${b.amount})`).join('\n');
+            
+            if (confirm(confirmMessage)) {
+                performDeleteOperation(selectedIds, `Deleted ${selectedIds.length} booking(s) successfully`);
+            }
+        }
+        
+        function performDeleteOperation(bookingIds, successMessage) {
+            // Remove from data array
+            bookingsData = bookingsData.filter(booking => !bookingIds.includes(booking.id.toString()));
+            
+            // Update Firebase if available
+            if (window.firebaseDB && window.firebaseDB.database) {
+                const { database, ref, update } = window.firebaseDB;
+                const updates = {};
+                
+                // Mark for deletion in Firebase (set to null removes the node)
+                bookingIds.forEach(id => {
+                    updates[`bookings/${id}`] = null;
+                });
+                
+                update(ref(database), updates).then(() => {
+                    console.log('Bookings deleted from Firebase successfully');
+                }).catch((error) => {
+                    console.error('Error deleting from Firebase:', error);
+                });
+            } else {
+                // Update localStorage as fallback
+                localStorage.setItem('muchiri_bookings', JSON.stringify(bookingsData));
+            }
+            
+            // Update UI
+            updateStats();
+            renderBookings();
+            
+            // Show success message
+            showDeleteSuccessMessage(successMessage);
+        }
+        
+        function showDeleteSuccessMessage(message) {
+            // Create success message element
+            const successMsg = document.createElement('div');
+            successMsg.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.2em;">🗑️</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            successMsg.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #e53e3e, #c53030);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(229, 62, 62, 0.3);
+                z-index: 1000;
+                font-weight: 500;
+                font-size: 0.95rem;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            document.body.appendChild(successMsg);
+            
+            // Animate in
+            setTimeout(() => {
+                successMsg.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                successMsg.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(successMsg)) {
+                        document.body.removeChild(successMsg);
+                    }
+                }, 300);
+            }, 3000);
         }
 
         // Initialize page
