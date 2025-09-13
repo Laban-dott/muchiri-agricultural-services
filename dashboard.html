@@ -380,100 +380,123 @@
         }
 
         function markCompleted(bookingId) {
-            const booking = bookingsData.find(b => b.id === bookingId);
-            if (booking && booking.status === 'pending') {
-                // Get the booking card element for animation
-                const bookingCard = document.querySelector(`button[onclick="markCompleted('${bookingId}')"]`).closest('.booking-card');
-                const button = document.querySelector(`button[onclick="markCompleted('${bookingId}')"]`);
-                
-                if (button && bookingCard) {
-                    // Step 1: Show processing state
-                    button.innerHTML = '⏳ Processing...';
-                    button.disabled = true;
-                    button.style.opacity = '0.7';
-                    button.style.cursor = 'not-allowed';
-                    
-                    // Step 2: Add completion animation to card
-                    bookingCard.style.transition = 'all 0.5s ease';
-                    bookingCard.style.transform = 'scale(1.02)';
-                    bookingCard.style.boxShadow = '0 8px 35px rgba(16, 185, 129, 0.3)';
-                    bookingCard.style.borderLeftColor = '#10b981';
-                    
-                    // Step 3: Show DONE tag temporarily
-                    const doneTag = document.createElement('div');
-                    doneTag.className = 'done-tag-animation';
-                    doneTag.innerHTML = '✅ DONE';
-                    doneTag.style.cssText = `
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%) scale(0);
-                        background: linear-gradient(135deg, #10b981, #059669);
-                        color: white;
-                        padding: 10px 20px;
-                        border-radius: 25px;
-                        font-weight: 700;
-                        font-size: 1.2rem;
-                        z-index: 1000;
-                        animation: doneAnimation 1.5s ease-out forwards;
-                        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
-                    `;
-                    bookingCard.style.position = 'relative';
-                    bookingCard.appendChild(doneTag);
-                }
+            console.log('Mark completed called with ID:', bookingId, typeof bookingId);
+            
+            // Find the booking in our data - handle both string and number IDs
+            const booking = bookingsData.find(b => b.id == bookingId || b.id === bookingId.toString());
+            if (!booking) {
+                console.error('Booking not found:', bookingId);
+                console.log('Available bookings:', bookingsData.map(b => ({id: b.id, status: b.status})));
+                alert('Error: Booking not found');
+                return;
+            }
+            
+            console.log('Found booking to complete:', booking);
+            
+            if (booking.status !== 'pending') {
+                alert('This booking is not in pending status!');
+                return;
+            }
 
-                // Update booking status
-                booking.status = 'completed';
-                booking.completedAt = new Date().toISOString();
+            // Get the booking card element for animation
+            const bookingCard = document.querySelector(`button[onclick="markCompleted('${bookingId}')"]`)?.closest('.booking-card') ||
+                               document.querySelector(`button[onclick="markCompleted(${bookingId})"]`)?.closest('.booking-card');
+            const button = document.querySelector(`button[onclick="markCompleted('${bookingId}')"]`) ||
+                          document.querySelector(`button[onclick="markCompleted(${bookingId})"]`);
+            
+            if (button && bookingCard) {
+                // Step 1: Show processing state
+                button.innerHTML = '⏳ Processing...';
+                button.disabled = true;
+                button.style.opacity = '0.7';
+                button.style.cursor = 'not-allowed';
                 
-                // Update in Firebase if available
-                if (window.firebaseDB && typeof bookingId === 'string' && bookingId !== 'sample1') {
-                    const bookingRef = window.firebaseDB.ref(window.firebaseDB.database, `bookings/${bookingId}`);
-                    window.firebaseDB.update(bookingRef, { 
-                        status: 'completed',
-                        completedAt: booking.completedAt
-                    })
-                    .then(() => {
-                        console.log('Status updated in Firebase');
-                        setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
-                    })
-                    .catch((error) => {
-                        console.error('Error updating Firebase:', error);
-                        setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
-                    });
-                } else {
-                    // Update localStorage if Firebase not available
-                    const storedBookings = JSON.parse(localStorage.getItem('muchiri_bookings') || '[]');
-                    const bookingIndex = storedBookings.findIndex(b => b.id === bookingId);
-                    if (bookingIndex !== -1) {
-                        storedBookings[bookingIndex].status = 'completed';
-                        storedBookings[bookingIndex].completedAt = booking.completedAt;
-                        localStorage.setItem('muchiri_bookings', JSON.stringify(storedBookings));
-                    }
+                // Step 2: Add completion animation to card
+                bookingCard.style.transition = 'all 0.5s ease';
+                bookingCard.style.transform = 'scale(1.02)';
+                bookingCard.style.boxShadow = '0 8px 35px rgba(16, 185, 129, 0.3)';
+                bookingCard.style.borderLeftColor = '#10b981';
+                
+                // Step 3: Show DONE tag temporarily
+                const doneTag = document.createElement('div');
+                doneTag.className = 'done-tag-animation';
+                doneTag.innerHTML = '✅ DONE';
+                doneTag.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) scale(0);
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 25px;
+                    font-weight: 700;
+                    font-size: 1.2rem;
+                    z-index: 1000;
+                    animation: doneAnimation 1.5s ease-out forwards;
+                    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+                `;
+                bookingCard.style.position = 'relative';
+                bookingCard.appendChild(doneTag);
+            }
+
+            // Update booking status in local data
+            booking.status = 'completed';
+            booking.completedAt = new Date().toISOString();
+            console.log('Updated booking status locally:', booking);
+            
+            // Update in Firebase if available
+            if (window.firebaseDB && window.firebaseDB.database) {
+                const { database, ref, update } = window.firebaseDB;
+                const updates = {};
+                updates[`bookings/${bookingId}/status`] = 'completed';
+                updates[`bookings/${bookingId}/completedAt`] = booking.completedAt;
+                
+                update(ref(database), updates)
+                .then(() => {
+                    console.log('Status updated in Firebase successfully');
                     setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
-                }
+                })
+                .catch((error) => {
+                    console.error('Error updating Firebase:', error);
+                    setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
+                });
+            } else {
+                // Update localStorage if Firebase not available
+                console.log('Firebase not available, using localStorage');
+                localStorage.setItem('muchiri_bookings', JSON.stringify(bookingsData));
+                setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
             }
         }
 
         // Helper function to complete the transition
         function completeTransition(bookingId, bookingCard) {
+            console.log('Completing transition for booking:', bookingId);
+            
             // Remove the DONE tag
-            const doneTag = bookingCard.querySelector('.done-tag-animation');
-            if (doneTag) {
-                doneTag.remove();
+            if (bookingCard) {
+                const doneTag = bookingCard.querySelector('.done-tag-animation');
+                if (doneTag) {
+                    doneTag.remove();
+                }
+                
+                // Reset card styling
+                bookingCard.style.transform = '';
+                bookingCard.style.boxShadow = '';
+                bookingCard.style.borderLeftColor = '';
             }
             
-            // Reset card styling
-            bookingCard.style.transform = '';
-            bookingCard.style.boxShadow = '';
-            
-            // Update UI
-            refreshDashboardUI(bookingId);
+            // Force UI refresh
+            console.log('Refreshing UI after completion');
+            updateStats();
+            renderBookings();
             
             // Show success message
-            const completedBooking = bookingsData.find(b => b.id === bookingId);
+            const completedBooking = bookingsData.find(b => b.id == bookingId);
             if (completedBooking) {
-                showSuccessMessage(`🎉 ${completedBooking.service} service completed for ${completedBooking.customer}! Now in Completed tab.`);
+                showSuccessMessage(`🎉 ${completedBooking.service} service completed for ${completedBooking.customer}! Check the Completed tab.`);
+            } else {
+                showSuccessMessage('🎉 Service marked as completed! Check the Completed tab.');
             }
         }
 
