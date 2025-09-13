@@ -348,13 +348,14 @@
 
         function markCompleted(bookingId) {
             const booking = bookingsData.find(b => b.id === bookingId);
-            if (booking) {
+            if (booking && booking.status === 'pending') {
                 // Add visual feedback immediately
                 const button = document.querySelector(`button[onclick="markCompleted('${bookingId}')"]`);
                 if (button) {
-                    button.textContent = '⏳ Processing...';
+                    button.innerHTML = '⏳ Processing...';
                     button.disabled = true;
                     button.style.opacity = '0.7';
+                    button.style.cursor = 'not-allowed';
                 }
 
                 // Update booking status
@@ -368,14 +369,14 @@
                         status: 'completed',
                         completedAt: booking.completedAt
                     })
-                        .then(() => {
-                            console.log('Status updated in Firebase');
-                            refreshDashboardUI();
-                        })
-                        .catch((error) => {
-                            console.error('Error updating Firebase:', error);
-                            refreshDashboardUI();
-                        });
+                    .then(() => {
+                        console.log('Status updated in Firebase');
+                        setTimeout(() => refreshDashboardUI(bookingId), 500);
+                    })
+                    .catch((error) => {
+                        console.error('Error updating Firebase:', error);
+                        setTimeout(() => refreshDashboardUI(bookingId), 500);
+                    });
                 } else {
                     // Update localStorage if Firebase not available
                     const storedBookings = JSON.parse(localStorage.getItem('muchiri_bookings') || '[]');
@@ -385,23 +386,30 @@
                         storedBookings[bookingIndex].completedAt = booking.completedAt;
                         localStorage.setItem('muchiri_bookings', JSON.stringify(storedBookings));
                     }
-                    refreshDashboardUI();
+                    setTimeout(() => refreshDashboardUI(bookingId), 500);
                 }
             }
         }
 
-        // Helper function to refresh UI after completion
-        function refreshDashboardUI() {
-            // Update stats and re-render bookings
+        // Enhanced UI refresh function
+        function refreshDashboardUI(completedBookingId) {
+            // Update stats first
             updateStats();
+            
+            // Re-render all booking lists
             renderBookings();
             
-            // Show success message with better styling
-            showSuccessMessage('Service marked as completed! ✅');
+            // Show success message with completed booking info
+            const completedBooking = bookingsData.find(b => b.id === completedBookingId);
+            if (completedBooking) {
+                showSuccessMessage(`✅ ${completedBooking.service} service completed for ${completedBooking.customer}!`);
+            } else {
+                showSuccessMessage('✅ Service marked as completed!');
+            }
             
-            // If user is on pending tab, they'll see the item disappear
-            // If on completed tab, they'll see it appear
-            // If on all tab, they'll see status change
+            // If user is currently viewing pending tab, they'll see the item disappear
+            // If viewing completed tab, they'll see the item appear with COMPLETED badge
+            // If viewing all tab, they'll see the status change from PENDING to COMPLETED
         }
 
         // Enhanced success message function
