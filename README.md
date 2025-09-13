@@ -17,7 +17,14 @@ A mobile-optimized agricultural services booking platform for rotavation, transp
 
 ## Live Demo
 
-Visit: [Your GitHub Pages URL will go here]
+**🌐 Primary URL**: [muchiri.com](https://muchiri.com)  
+**📱 Mobile**: [m.muchiri.com](https://muchiri.com)  
+**🔗 GitHub Pages**: [laban-dott.github.io/muchiri-agricultural-services](https://laban-dott.github.io/muchiri-agricultural-services/home.html)
+
+### Quick Access:
+- **Home Page**: [muchiri.com](https://muchiri.com)
+- **Book Services**: [muchiri.com/index.html](https://muchiri.com/index.html)
+- **Driver Dashboard**: [muchiri.com/dashboard.html](https://muchiri.com/dashboard.html)
 
 ## Login Credentials (Driver Dashboard)
 - Username: `muchiri`
