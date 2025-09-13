@@ -850,33 +850,41 @@ select:disabled {
 }
 
 .complete-btn {
-    background: linear-gradient(135deg, #48bb78, #38a169);
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
     border: none;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    font-weight: 500;
+    padding: 15px 25px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
-    box-shadow: 0 2px 10px rgba(72, 187, 120, 0.3);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .complete-btn:hover {
-    background: linear-gradient(135deg, #38a169, #2d7d55);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(16, 185, 129, 0.4);
 }
 
 .complete-btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
+    background: #94a3b8;
+    box-shadow: none;
+}
+
+.complete-btn:active {
+    transform: translateY(0);
 }
 
 .complete-btn:active {
@@ -975,7 +983,5 @@ select:disabled {
     .stat-label {
         font-size: 0.8rem;
     }
-    
-    .bookings-content {
- 
+} 
  
