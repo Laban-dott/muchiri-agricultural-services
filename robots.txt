@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://laban-dott.github.io/muchiri-agricultural-services/sitemap.xml
+
+# Allow indexing of main pages
+Allow: /home.html
+Allow: /index.html
+
+# Prevent indexing of dashboard
+Disallow: /dashboard.html
