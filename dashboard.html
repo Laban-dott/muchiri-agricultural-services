@@ -284,8 +284,13 @@
         }
 
         function renderBookings() {
+            console.log('Rendering bookings, current data:', bookingsData);
+            
             const pendingBookings = bookingsData.filter(b => b.status === 'pending');
             const completedBookings = bookingsData.filter(b => b.status === 'completed');
+            
+            console.log('Pending bookings:', pendingBookings);
+            console.log('Completed bookings:', completedBookings);
             
             renderBookingsList('pendingBookings', pendingBookings);
             renderBookingsList('completedBookings', completedBookings);
@@ -343,7 +348,7 @@
                     
                     ${booking.status === 'pending' ? `
                         <div class="booking-actions">
-                            <button onclick="markCompleted(${booking.id})" class="complete-btn">
+                            <button onclick="markCompleted('${booking.id}')" class="complete-btn">
                                 ✅ Mark Complete
                             </button>
                             <button onclick="deleteBooking('${booking.id}')" class="delete-single-btn">
@@ -440,13 +445,17 @@
                 bookingCard.appendChild(doneTag);
             }
 
-            // Update booking status in local data
+            // Update booking status in local data FIRST
             booking.status = 'completed';
             booking.completedAt = new Date().toISOString();
             console.log('Updated booking status locally:', booking);
             
+            // Update localStorage immediately as backup
+            localStorage.setItem('muchiri_bookings', JSON.stringify(bookingsData));
+            
             // Update in Firebase if available
             if (window.firebaseDB && window.firebaseDB.database) {
+                console.log('Updating Firebase with booking ID:', bookingId);
                 const { database, ref, update } = window.firebaseDB;
                 const updates = {};
                 updates[`bookings/${bookingId}/status`] = 'completed';
@@ -459,12 +468,12 @@
                 })
                 .catch((error) => {
                     console.error('Error updating Firebase:', error);
+                    // Still complete the transition even if Firebase fails
                     setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
                 });
             } else {
-                // Update localStorage if Firebase not available
-                console.log('Firebase not available, using localStorage');
-                localStorage.setItem('muchiri_bookings', JSON.stringify(bookingsData));
+                // Firebase not available, rely on localStorage
+                console.log('Firebase not available, using localStorage only');
                 setTimeout(() => completeTransition(bookingId, bookingCard), 1500);
             }
         }
@@ -472,6 +481,7 @@
         // Helper function to complete the transition
         function completeTransition(bookingId, bookingCard) {
             console.log('Completing transition for booking:', bookingId);
+            console.log('Booking status after update:', bookingsData.find(b => b.id == bookingId));
             
             // Remove the DONE tag
             if (bookingCard) {
@@ -486,10 +496,26 @@
                 bookingCard.style.borderLeftColor = '';
             }
             
-            // Force UI refresh
-            console.log('Refreshing UI after completion');
+            // Force complete UI refresh
+            console.log('Forcing complete UI refresh');
+            console.log('Current bookingsData:', bookingsData.map(b => ({id: b.id, status: b.status, service: b.service})));
+            
+            // Update statistics
             updateStats();
+            
+            // Force re-render all sections
             renderBookings();
+            
+            // Update tab counts
+            const pendingCount = bookingsData.filter(b => b.status === 'pending').length;
+            const completedCount = bookingsData.filter(b => b.status === 'completed').length;
+            const totalCount = bookingsData.length;
+            
+            document.getElementById('pendingCount').textContent = pendingCount;
+            document.getElementById('completedCount').textContent = completedCount;
+            document.getElementById('allCount').textContent = totalCount;
+            
+            console.log(`Updated counts - Pending: ${pendingCount}, Completed: ${completedCount}, Total: ${totalCount}`);
             
             // Show success message
             const completedBooking = bookingsData.find(b => b.id == bookingId);
